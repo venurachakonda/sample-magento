@@ -80,10 +80,11 @@ pipeline {
         ]]) {
             sh '''
 		    		  export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-		    			IMAGE_ID=$(${AWS_BIN} ec2 describe-instances | jq '.Reservations[].Instances[] | select ((.Tags[]|select(.Key=="Name")|.Value) | match("vr") ) | .InstanceId')
-							echo ${IMAGE_ID}
-							echo "create image"
-		    			${AWS_BIN} iam get-user
+		    			IMAGE_ID=$(${AWS_BIN} ec2 describe-instances | jq -r '.Reservations[].Instances[] | select ((.Tags[]|select(.Key=="Name")|.Value) | match("vr") ) | .InstanceId')
+              echo "Create snapshot of Instance ${IMAGE_ID}"
+							SNAPSHOT_ID=$(${AWS_BIN} ec2 create-image --instance-id ${IMAGE_ID} --name "vr-magento" --description "An AMI for my server --no-reboot" | jq -r .ImageId)
+							sleep(60)
+		    			echo $SNAPSHOT_ID
             '''
         }
 			}
