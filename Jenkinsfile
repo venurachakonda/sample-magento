@@ -52,7 +52,7 @@ pipeline {
 				checkout scm
 		    }
 		  }
-			
+
 		stage('Build Artifact') {
 		    steps {
 					sh '''
@@ -87,4 +87,5 @@ pipeline {
         }
 			}
 		}
+	}
 }
