@@ -65,7 +65,7 @@ pipeline {
 		stage('Deploy to Dev') {
 			steps {
 				timeout(time: 15, unit: 'MINUTES') {
-				  sh './scrpts/dev_deploy.sh'
+				  sh './scripts/dev_deploy.sh'
 				}
 			}
 		}
