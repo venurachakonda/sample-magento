@@ -52,8 +52,7 @@ pipeline {
 				checkout scm
 		    }
 		  }
-		}
-
+			
 		stage('Build Artifact') {
 		    steps {
 					sh '''
@@ -61,7 +60,7 @@ pipeline {
 					'''
 					archiveArtifacts artifacts: '*.tar.bz2', fingerprint: true
 		    }
-	    }
+	  }
 
 		stage('Deploy to Dev') {
 			steps {
@@ -73,17 +72,17 @@ pipeline {
 
 		stage('Create Snapshot of Dev') {
 			steps {
-				withCredentials([[
+		    withCredentials([[
             $class: 'AmazonWebServicesCredentialsBinding',
             credentialsId: 'aws-creds',
             accessKeyVariable: 'AWS_ACCESS_KEY_ID',
             secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
         ]]) {
             sh '''
-						  export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION}"
-							${AWS_BIN} ec2 describe-instances'
+		    		  export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION}"
+		    			${AWS_BIN} ec2 describe-instances'
               sleep 1m
-							${AWS_BIN} iam get-user
+		    			${AWS_BIN} iam get-user
             '''
         }
 			}
