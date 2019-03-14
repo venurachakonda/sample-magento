@@ -83,8 +83,8 @@ pipeline {
 		    			IMAGE_ID=$(${AWS_BIN} ec2 describe-instances | jq -r '.Reservations[].Instances[] | select ((.Tags[]|select(.Key=="Name")|.Value) | match("vr") ) | .InstanceId')
               echo "Create snapshot of Instance ${IMAGE_ID}"
 							SNAPSHOT_ID=$(${AWS_BIN} ec2 create-image --instance-id ${IMAGE_ID} --name "vr-magento" --description "An AMI for my server --no-reboot" | jq -r .ImageId)
-							sleep(60)
-		    			echo $SNAPSHOT_ID
+							sleep 60
+		    			echo "Snapshot ID: ${SNAPSHOT_ID}"
             '''
         }
 			}
