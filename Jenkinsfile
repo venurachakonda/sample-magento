@@ -78,12 +78,13 @@ pipeline {
             accessKeyVariable: 'AWS_ACCESS_KEY_ID',
             secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
         ]]) {
-            sh '''
-		    		  export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION}"
-		    			${AWS_BIN} ec2 describe-instances
-              sleep 1m
+            sh """
+		    		  export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+		    			IMAGE_ID=$(${AWS_BIN} ec2 describe-instances | jq '.Reservations[].Instances[] | select ((.Tags[]|select(.Key=="Name")|.Value) | match("vr") ) | .InstanceId')
+							echo ${IMAGE_ID}
+							echo \"create image\"
 		    			${AWS_BIN} iam get-user
-            '''
+            """
         }
 			}
 		}
