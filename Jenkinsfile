@@ -4,7 +4,9 @@ pipeline {
 	environment {
 		AWS_DEFAULT_REGION="us-east-1"
 		AWS_BIN = '/bin/aws'
-		FILE='build.tar.bz2'                 //## Generated TAR file#
+		FILE='build.tar.bz2'
+		JOB_NAME=${env.JOB_NAME}
+		BUILD_NUMBER=${env.BUILD_NUMBER}                 //## Generated TAR file#
 	}
     options {
       ansiColor colorMapName: 'XTerm'
@@ -80,7 +82,7 @@ pipeline {
         ]]) {
             sh '''
 		    		  export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-							"./scripts/aws_create_image.sh ${env.JOB_NAME} ${env.BUILD_NUMBER}"
+							./scripts/aws_create_image.sh ${JOB_NAME} ${BUILD_NUMBER}
             '''
         }
 			}
