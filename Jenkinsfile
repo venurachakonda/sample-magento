@@ -5,8 +5,8 @@ pipeline {
 		AWS_DEFAULT_REGION="us-east-1"
 		AWS_BIN = '/bin/aws'
 		FILE='build.tar.bz2'
-		JOB_NAME=${env.JOB_NAME}
-		BUILD_NUMBER=${env.BUILD_NUMBER}                 //## Generated TAR file#
+		JOB_NAME="${env.JOB_NAME}"
+		BUILD_NUMBER="${env.BUILD_NUMBER} "                //## Generated TAR file#
 	}
     options {
       ansiColor colorMapName: 'XTerm'
