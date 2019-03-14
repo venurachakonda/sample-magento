@@ -15,11 +15,11 @@ pipeline {
 			steps {
 		  	    script {
                     /* Check the GIT_BRANCH to compute build version and target environment */
-                    if (env.GIT_BRANCH ==~ 'dev') {
+                    if (env.GIT_BRANCH ==~ 'origin/dev') {
                       env.Target = 'dev'
-                    } else if (env.GIT_BRANCH ==~ 'qa') {
+                    } else if (env.GIT_BRANCH ==~ 'origin/qa') {
                       env.Target = 'qa'
-                    } else if (env.GIT_BRANCH ==~ 'uat') {
+                    } else if (env.GIT_BRANCH ==~ 'origin/uat') {
                       env.Target = 'uat'
 										} else if (env.GIT_BRANCH == 'origin/master') {
 												env.Target = 'production'
