@@ -2,10 +2,12 @@
 
 AWS_BIN="/bin/aws"
 OWNER_ID="747476456671"
+JOB_NAME=${1}
+BUILD_NUMBER=${2}
 
 INSTANCE_ID=$(${AWS_BIN} ec2 describe-instances | jq -r '.Reservations[].Instances[] | select ((.Tags[]|select(.Key=="Name")|.Value) | match("vr") ) | .InstanceId')
 echo "Create image from Instance ${INSTANCE_ID}"
-IMAGE_ID=$(${AWS_BIN} ec2 create-image --instance-id ${INSTANCE_ID} --name "vr-magento" --description "An AMI for my server" --no-reboot | jq -r .ImageId)
+IMAGE_ID=$(${AWS_BIN} ec2 create-image --instance-id ${INSTANCE_ID} --name "${JOB_NAME}-${BUILD_NUMBER}" --description "An AMI for my server" --no-reboot | jq -r .ImageId)
 
 check_image_status=$(${AWS_BIN} ec2 describe-images --image-ids ${IMAGE_ID} --owners ${OWNER_ID}  | jq -r .Images[].State)
 
