@@ -1,89 +1,29 @@
-pipeline {
-	agent any
+#!/usr/bin/env bash
 
-	environment {
-		AWS_DEFAULT_REGION="us-east-1"
-		AWS_BIN = '/bin/aws'
-		FILE='build.tar.bz2'                 //## Generated TAR file#
-	}
-    options {
-      ansiColor colorMapName: 'XTerm'
-    }
+AWS_BIN="/bin/aws"
+OWNER_ID="747476456671"
 
-	stages {
-		stage('Setup') {
-			steps {
-		  	    script {
-                    /* Check the GIT_BRANCH to compute build version and target environment */
-                    if (env.GIT_BRANCH ==~ 'origin/dev') {
-                      env.Target = 'dev'
-                    } else if (env.GIT_BRANCH ==~ 'origin/qa') {
-                      env.Target = 'qa'
-                    } else if (env.GIT_BRANCH ==~ 'origin/uat') {
-                      env.Target = 'uat'
-										} else if (env.GIT_BRANCH == 'origin/master') {
-												env.Target = 'production'
-                    } else {
-                      error "Unknown branch type: ${env.GIT_BRANCH}"
-                    }
-							// Temporary Stub, find version of package
-		  	    	env.PACKAGE_VERSION = sh(
-			    		script: """
-			    			echo "1"
-			    		""",
-			    		returnStdout: true
-			    		).trim()
+INSTANCE_ID=$(${AWS_BIN} ec2 describe-instances | jq -r '.Reservations[].Instances[] | select ((.Tags[]|select(.Key=="Name")|.Value) | match("vr") ) | .InstanceId')
+echo "Create image from Instance ${INSTANCE_ID}"
+IMAGE_ID=$(${AWS_BIN} ec2 create-image --instance-id ${INSTANCE_ID} --name "vr-magento" --description "An AMI for my server" --no-reboot | jq -r .ImageId)
 
-		  	    	/* create version with jenkins build number */
+check_image_status=$(${AWS_BIN} ec2 describe-images --image-ids ${IMAGE_ID} --owners ${OWNER_ID}  | jq -r .Images[].State)
 
-		  	    	if ( env.Target == 'dev' || env.Target == 'qa' ) {
-		  	    	  env.VERSION     = 'v' + env.PACKAGE_VERSION + '-' + env.BUILD_NUMBER
-		  	    	} else if ( env.Target == 'uat' || env.Target == 'production' ) {
-		  	    	  env.VERSION     = 'v' + env.PACKAGE_VERSION + '-' + env.BUILD_NUMBER + '-rc'
-		  	    	} else {
-		  	    	  error "Unknown Target: ${env.Target}"
-		  	    	}
-		        }
-			}
-		}
-		stage('Checkout') {
-		  steps {
-		    deleteDir()
-				checkout scm
-		    }
-		  }
+COUNTER=0
+until [[ $check_image_status == "available"  ]]; do
+    if [[ $COUNTER -gt 10 ]]; then
+      echo "Image not ready"
+      exit 1
+    fi
+    check_image_status=$(${AWS_BIN} ec2 describe-images --image-ids ${IMAGE_ID} --owners ${OWNER_ID}  | jq -r .Images[].State)
+    if [[ $check_image_status == "available"  ]]; then
+        echo "Image ${IMAGE_ID} is available"
+        break
+    else
+    	echo " [$COUNTER] Waiting for image ${IMAGE_ID} to be available"
+    fi
+		sleep 30
+    let COUNTER=COUNTER+1
+done
 
-		stage('Build Artifact') {
-		    steps {
-					sh '''
-					  tar cvjf "${FILE}" *
-					'''
-					archiveArtifacts artifacts: '*.tar.bz2', fingerprint: true
-		    }
-	  }
-
-		stage('Deploy to Dev') {
-			steps {
-				timeout(time: 15, unit: 'MINUTES') {
-				  sh './scripts/dev_deploy.sh'
-				}
-			}
-		}
-
-		stage('Create Snapshot of Dev') {
-			steps {
-		    withCredentials([[
-            $class: 'AmazonWebServicesCredentialsBinding',
-            credentialsId: 'aws-creds',
-            accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-            secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-        ]]) {
-            sh '''
-		    		  export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-							./scripts/aws_create_image.sh
-            '''
-        }
-			}
-		}
-	}
-}
+echo "IMAGE ID: ${IMAGE_ID}"
