@@ -59,7 +59,7 @@ function create_new_launch_configuration() {
     --key-name "${KEY_NAME}" \
     --image-id "${IMAGE_ID}" \
     --instance-type "$INSTANCE_TYPE" \
-    --security-groups "$(echo ${SECURITY_GROUPS} | tr -d '[]' | tr -d \" | tr -d \,)" \
+    --security-groups "$(echo ${SECURITY_GROUPS} | tr -d '[]' | tr -d \" | tr -d \, |tr -d \')" \
     --user-data "${USER_DATA}" \
     --block-device-mappings "[{\"DeviceName\": \"/dev/sda\",\"Ebs\":{\"VolumeSize\":50,\"VolumeType\":\"gp2\",\"DeleteOnTermination\":true}}]"
 }
