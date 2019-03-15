@@ -6,7 +6,9 @@ pipeline {
 		AWS_BIN = '/bin/aws'
 		FILE='build.tar.bz2'
 		JOB_NAME="${env.JOB_NAME}"
-		BUILD_NUMBER="${env.BUILD_NUMBER} "                //## Generated TAR file#
+		BUILD_NUMBER="${env.BUILD_NUMBER}"                //## Generated TAR file#
+		APP_NAME="vr-sample"
+		ASG_NAME="vr-asg1"
 	}
     options {
       ansiColor colorMapName: 'XTerm'
@@ -72,7 +74,15 @@ pipeline {
 			}
 		}
 
-		stage('Create Snapshot of Dev') {
+		stage('Approval') {
+			steps {
+				timeout(time: 2, unit: 'HOURS') {
+					input 'Create AMI for this build?'
+				}
+			}
+		}
+
+		stage('Create AMI') {
 			steps {
 		    withCredentials([[
             $class: 'AmazonWebServicesCredentialsBinding',
@@ -82,8 +92,42 @@ pipeline {
         ]]) {
             sh '''
 		    		  export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-							./scripts/aws_create_image.sh ${JOB_NAME} ${BUILD_NUMBER}
+							./scripts/create_ami.sh ${JOB_NAME} ${BUILD_NUMBER} "vr-sample" "vr-asg1"
             '''
+        }
+			}
+		}
+
+		stage('create new launch configuration') {
+			steps {
+		    withCredentials([[
+            $class: 'AmazonWebServicesCredentialsBinding',
+            credentialsId: 'aws-creds',
+            accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+            secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+        ]]) {
+            sh '''
+		    		  export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+							source ./scripts/functions.sh
+							create_new_launch_configuration
+            '''
+        }
+			}
+		}
+
+		stage('update asg launch configuration') {
+			steps {
+		    withCredentials([[
+            $class: 'AmazonWebServicesCredentialsBinding',
+            credentialsId: 'aws-creds',
+            accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+            secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+        ]]) {
+            sh '''
+		    		  export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+							source ./scripts/functions.sh
+							update_asg_launch_configuration
+						'''
         }
 			}
 		}
