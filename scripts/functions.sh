@@ -13,7 +13,7 @@ function log() {
 function capture_old_launch_config() {
   LAUNCH_CONFIG_NAME=$(${AWS_BIN} autoscaling describe-auto-scaling-groups --region ${AWS_DEFAULT_REGION} --auto-scaling-group-name ${ASG_NAME} | jq -r '.AutoScalingGroups[].Instances[].LaunchConfigurationName')
   KEY_NAME=$(${AWS_BIN} autoscaling describe-launch-configurations --launch-configuration-names ${LAUNCH_CONFIG_NAME} | jq -r '.LaunchConfigurations[].KeyName' )
-  SECURITY_GROUPS=$(${AWS_BIN} autoscaling describe-launch-configurations --launch-configuration-names ${LAUNCH_CONFIG_NAME} | jq -r '.LaunchConfigurations[].SecurityGroups[]')
+  SECURITY_GROUPS=$(${AWS_BIN} autoscaling describe-launch-configurations --launch-configuration-names ${LAUNCH_CONFIG_NAME} | jq -r '.LaunchConfigurations[].SecurityGroups')
   INSTANCE_TYPE=$(${AWS_BIN} autoscaling describe-launch-configurations --launch-configuration-names ${LAUNCH_CONFIG_NAME} | jq -r '.LaunchConfigurations[].InstanceType')
   USER_DATA=$(${AWS_BIN} autoscaling describe-launch-configurations --launch-configuration-names ${LAUNCH_CONFIG_NAME} | jq -r '.LaunchConfigurations[].UserData')
 }
@@ -59,7 +59,7 @@ function create_new_launch_configuration() {
     --key-name "${KEY_NAME}" \
     --image-id "${IMAGE_ID}" \
     --instance-type "$INSTANCE_TYPE" \
-    --security-groups "$(echo ${SECURITY_GROUPS} | tr -d "'")" \
+    --security-groups "$(echo ${SECURITY_GROUPS} | tr -d '[]' | tr -d \" | tr -d \,)" \
     --user-data "${USER_DATA}" \
     --block-device-mappings "[{\"DeviceName\": \"/dev/sda\",\"Ebs\":{\"VolumeSize\":50,\"VolumeType\":\"gp2\",\"DeleteOnTermination\":true}}]"
 }
