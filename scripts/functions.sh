@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 AWS_BIN="/bin/aws"
 OWNER_ID="747476456671"
-# APP_NAME
-#ASG_NAME
-#OWNER_ID
-#
 
 function log() {
   echo "$(date -R ) $@"
@@ -30,6 +26,10 @@ function create_image() {
                                          --no-reboot \
                                          --block-device-mappings "[{\"DeviceName\": \"/dev/sdf\",\"Ebs\":{\"VolumeType\":\"gp2\",\"VolumeSize\":50}}]"| jq -r .ImageId)
   echo "${IMAGE_ID}"
+}
+
+function tag_image() {
+  ${AWS_BIN} ec2 create-tags --resources ${IMAGE_ID} --tags Key=Name,Value="${JOB_NAME}-${BUILD_NUMBER}"   Key=asg,Value=${ASG_NAME}
 }
 
 function check_image_status() {

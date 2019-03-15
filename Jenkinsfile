@@ -101,6 +101,7 @@ pipeline {
 							source ./scripts/functions.sh
 							create_image > image_id.txt
 							check_image_status
+							tag_image
             '''
 						script {
 							env.IMAGE_ID = readFile('image_id.txt').trim()
@@ -109,7 +110,7 @@ pipeline {
 			}
 		}
 
-		stage('create new launch configuration') {
+		stage('Create New Launch Configuration') {
 			steps {
 				environment name: 'IMAGE_ID', value: "${env.IMAGE_ID}"
 		    withCredentials([[
@@ -128,7 +129,7 @@ pipeline {
 			}
 		}
 
-		stage('update asg launch configuration') {
+		stage('Update ASG') {
 			steps {
 		    withCredentials([[
             $class: 'AmazonWebServicesCredentialsBinding',
