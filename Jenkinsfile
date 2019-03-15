@@ -64,6 +64,12 @@ pipeline {
 					'''
 					archiveArtifacts artifacts: '*.tar.bz2', fingerprint: true
 		    }
+
+				post {
+					success {
+						archiveArtifacts(artifacts: '*.tar.bz2', fingerprint: true)
+					}
+				}
 	  }
 
 		stage('Deploy to Dev') {
@@ -96,9 +102,9 @@ pipeline {
 							create_image > image_id.txt
             '''
 						script {
-							IMAGE_ID = readFile('image_id.txt').trim()
+							env.IMAGE_ID = readFile('image_id.txt').trim()
 						}
-						echo "${IMAGE_ID}"
+						echo "Image ID is: ${env.IMAGE_ID}"
         }
 			}
 		}
@@ -112,8 +118,9 @@ pipeline {
             secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
         ]]) {
             sh '''
-		    		  export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}; export IMAGE_ID=${IMAGE_ID}
+		    		  export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION};
 							source ./scripts/functions.sh
+							IMAGE_ID=${env.BUILD_ID}
 							capture_old_launch_config
 							create_new_launch_configuration
             '''
