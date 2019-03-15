@@ -23,7 +23,7 @@ function capture_asg_nodes() {
 }
 
 function create_image() {
-  INSTANCE_ID=$(${AWS_BIN} ec2 describe-instances | jq -r '.Reservations[].Instances[] | select ((.Tags[]|select(.Key=="Name")|.Value) | match("'"${ASG_NAME}"'") ) | .InstanceId')
+  INSTANCE_ID=$(${AWS_BIN} ec2 describe-instances --filter 'Name=instance-state-name,Values=running' | jq -r '.Reservations[].Instances[] | select ((.Tags[]|select(.Key=="Name")|.Value) | match("'"${ASG_NAME}"'") ) | .InstanceId')
   log "Create image from Instance ${INSTANCE_ID}"
   IMAGE_ID=$(${AWS_BIN} ec2 create-image --instance-id ${INSTANCE_ID} \
                                          --name "${JOB_NAME}-${BUILD_NUMBER}" \
