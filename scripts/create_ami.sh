@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+cd $(dirname "$0")
 
 OWNER_ID="747476456671"
 JOB_NAME=${1}
