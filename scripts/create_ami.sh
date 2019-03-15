@@ -10,5 +10,3 @@ ASG_NAME=${4}
 source ./functions.sh
 
 create_image
-log "IMAGE ID: ${IMAGE_ID}"
-return ${IMAGE_ID}
