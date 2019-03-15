@@ -59,7 +59,7 @@ function create_new_launch_configuration() {
     --key-name "${KEY_NAME}" \
     --image-id "${IMAGE_ID}" \
     --instance-type "$INSTANCE_TYPE" \
-    --security-groups "'"${SECURITY_GROUPS}"'" \
+    --security-groups ${SECURITY_GROUPS} \
     --user-data "${USER_DATA}" \
     --block-device-mappings "[{\"DeviceName\": \"/dev/sda\",\"Ebs\":{\"VolumeSize\":50,\"VolumeType\":\"gp2\",\"DeleteOnTermination\":true}}]"
 }
@@ -67,4 +67,3 @@ function create_new_launch_configuration() {
 function update_asg_launch_configuration() {
   ${AWS_BIN} autoscaling update-auto-scaling-group --auto-scaling-group-name ${ASG_NAME} --launch-configuration-name "${APP_NAME}-${BUILD_NUMBER}-lc"
 }
-
