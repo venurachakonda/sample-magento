@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-AWS_BIN="/bin/aws"
+AWS_BIN="/usr/bin/aws"
 OWNER_ID="747476456671"
 
 function log() {
