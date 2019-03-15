@@ -41,6 +41,7 @@ function create_image() {
       check_image_status=$(${AWS_BIN} ec2 describe-images --image-ids ${IMAGE_ID} --owners ${OWNER_ID}  | jq -r .Images[].State)
       if [[ $check_image_status == "available"  ]]; then
           log "Image ${IMAGE_ID} is available"
+          return ${IMAGE_ID}
           break
       else
       	log " [$COUNTER] Waiting for image ${IMAGE_ID} to be available"
