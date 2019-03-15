@@ -27,7 +27,8 @@ function create_image() {
   IMAGE_ID=$(${AWS_BIN} ec2 create-image --instance-id ${INSTANCE_ID} \
                                          --name "${JOB_NAME}-${BUILD_NUMBER}" \
                                          --description "An AMI for ${APP_NAME} server" \
-                                         --no-reboot --block-device-mappings "[{\"DeviceName\": \"/dev/sdf\",\"Ebs\":{\"VolumeType\":\"gp2\",\"VolumeSize\":50}}]"| jq -r .ImageId)
+                                         --no-reboot \
+                                         --block-device-mappings "[{\"DeviceName\": \"/dev/sdf\",\"Ebs\":{\"VolumeType\":\"gp2\",\"VolumeSize\":50}}]"| jq -r .ImageId)
   echo "${IMAGE_ID}"
 }
 
@@ -58,9 +59,9 @@ function create_new_launch_configuration() {
     --key-name "${KEY_NAME}" \
     --image-id "${IMAGE_ID}" \
     --instance-type "$INSTANCE_TYPE" \
-    --security-groups "${SECURITY_GROUPS}" \
-    --user-data "${USER_DATA}"
-    --block-device-mappings "[{\"DeviceName\": \"/dev/xvda\",\"Ebs\":{\"VolumeSize\":8,\"VolumeType\":\"gp2\",\"DeleteOnTermination\":true}}]"
+    --security-groups "$(echo ${SECURITY_GROUPS} | tr -d "'")" \
+    --user-data "${USER_DATA}" \
+    --block-device-mappings "[{\"DeviceName\": \"/dev/sda\",\"Ebs\":{\"VolumeSize\":50,\"VolumeType\":\"gp2\",\"DeleteOnTermination\":true}}]"
 }
 
 function update_asg_launch_configuration() {
