@@ -100,11 +100,12 @@ pipeline {
 		    		  export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
 							source ./scripts/functions.sh
 							create_image > image_id.txt
+							check_image_status
             '''
 						script {
 							env.IMAGE_ID = readFile('image_id.txt').trim()
 						}
-						echo "Image ID is: ${env.IMAGE_ID}"
+						sh 'echo \"Image ID is: ${env.IMAGE_ID}\"'
         }
 			}
 		}
@@ -120,7 +121,7 @@ pipeline {
             sh '''
 		    		  export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION};
 							source ./scripts/functions.sh
-							IMAGE_ID=${env.BUILD_ID}
+							IMAGE_ID=${env.IMAGE_ID}
 							capture_old_launch_config
 							create_new_launch_configuration
             '''
