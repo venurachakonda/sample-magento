@@ -24,12 +24,14 @@ function capture_asg_nodes() {
 
 function create_image() {
   INSTANCE_ID=$(${AWS_BIN} ec2 describe-instances --filter 'Name=instance-state-name,Values=running' | jq -r '.Reservations[].Instances[] | select ((.Tags[]|select(.Key=="Name")|.Value) | match("'"${ASG_NAME}"'") ) | .InstanceId')
-  log "Create image from Instance ${INSTANCE_ID}"
   IMAGE_ID=$(${AWS_BIN} ec2 create-image --instance-id ${INSTANCE_ID} \
                                          --name "${JOB_NAME}-${BUILD_NUMBER}" \
                                          --description "An AMI for ${APP_NAME} server" \
                                          --no-reboot --block-device-mappings "[{\"DeviceName\": \"/dev/sdf\",\"Ebs\":{\"VolumeType\":\"gp2\",\"VolumeSize\":50}}]"| jq -r .ImageId)
+  echo "${IMAGE_ID}"
+}
 
+function check_image_status() {
   check_image_status=$(${AWS_BIN} ec2 describe-images --image-ids ${IMAGE_ID} --owners ${OWNER_ID}  | jq -r .Images[].State)
 
   COUNTER=0
@@ -41,7 +43,6 @@ function create_image() {
       check_image_status=$(${AWS_BIN} ec2 describe-images --image-ids ${IMAGE_ID} --owners ${OWNER_ID}  | jq -r .Images[].State)
       if [[ $check_image_status == "available"  ]]; then
           log "Image ${IMAGE_ID} is available"
-          echo ${IMAGE_ID}
           break
       else
       	log " [$COUNTER] Waiting for image ${IMAGE_ID} to be available"
