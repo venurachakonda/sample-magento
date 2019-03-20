@@ -85,7 +85,7 @@ pipeline {
 							source ${HOME}/.bashrc
 							vpc=$(aws ec2 describe-vpcs --filters Name=vpc-id,Values=vpc-e5cf1c81 --query "Vpcs[0].VpcId")
 							subnet=subnet-e4f4c3bd
-							security_groups=[sg-0d0a1ec5f29912f2f]
+							security_groups="sg-0d0a1ec5f29912f2f"
 							packer build -var vpc_id=${vpc} -var subnet_id=${subnet} -var security_group_ids=${security_groups} -var revision=${BUILD_NUMBER} -var 'vpc_region=us-east-1' -var ssh_username="centos" -var instance_type="t2.large" packer.json
             '''
         }
@@ -152,4 +152,3 @@ pipeline {
 */
 	}
 }
-
