@@ -87,9 +87,6 @@ pipeline {
 							security_groups="[sg-0d0a1ec5f29912f2f]"
 							packer build -var vpc_id=${vpc} -var subnet_id=${subnet} -var security_group_ids=${security_groups} -var revision=${BUILD_NUMBER} packer.json
             '''
-						script {
-							env.IMAGE_ID = readFile('image_id.txt').trim()
-						}
         }
 			}
 		}
