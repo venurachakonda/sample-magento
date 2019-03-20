@@ -4,9 +4,9 @@ pipeline {
 	environment {
 		AWS_DEFAULT_REGION="us-east-1"
 		AWS_BIN = '/usr/bin/aws'
-		FILE='build.tar.bz2'
+		FILE='vuse-mage2-build.tar.bz2'
 		JOB_NAME="${env.JOB_NAME}"
-		BUILD_NUMBER="${env.BUILD_NUMBER}"                //## Generated TAR file#
+		BUILD_NUMBER="${env.BUILD_NUMBER}"
 		APP_NAME="vr-sample"
 		ASG_NAME="vr-asg1"
 	}
@@ -72,22 +72,28 @@ pipeline {
 				}
 	  }
 
-		stage('Deploy to Dev') {
+		stage('Build AMI') {
 			steps {
-				timeout(time: 15, unit: 'MINUTES') {
-				  sh './scripts/dev_deploy.sh'
-				}
+		    withCredentials([[
+            $class: 'AmazonWebServicesCredentialsBinding',
+            credentialsId: 'aws-creds',
+            accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+            secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+        ]]) {
+            sh '''
+		    		  export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+							vpc=$(aws ec2 describe-vpcs --filters Name=vpc-id,Values=vpc-e5cf1c81 --query "Vpcs[0].VpcId")
+							subnet="subnet-e4f4c3bd"
+							security_groups="[sg-0d0a1ec5f29912f2f]"
+							packer build -var vpc_id=${vpc} -var subnet_id=${subnet} -var security_group_ids=${security_groups} -var revision=${BUILD_NUMBER} packer.json
+            '''
+						script {
+							env.IMAGE_ID = readFile('image_id.txt').trim()
+						}
+        }
 			}
 		}
-
-		stage('Approval') {
-			steps {
-				timeout(time: 2, unit: 'HOURS') {
-					input 'Create AMI for this build?'
-				}
-			}
-		}
-
+/*
 		stage('Create AMI') {
 			steps {
 		    withCredentials([[
@@ -145,5 +151,6 @@ pipeline {
         }
 			}
 		}
+*/
 	}
 }
