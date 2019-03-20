@@ -82,9 +82,9 @@ pipeline {
         ]]) {
             sh '''
 		    		  export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-							vpc=$(aws ec2 describe-vpcs --filters Name=tag:Name,Values=DEV-VPC-EAST --query "Vpcs[0].VpcId")
-							subnet=$(aws ec2 describe-subnets --filter Name=vpc-id,Values=${vpc} Name=tag:aws:cloudformation:logical-id,Values=PrivSubnet1 --query 'Subnets[0].SubnetId')
-							security_groups=$(aws ec2 describe-security-groups --filter Name=vpc-id,Values=${vpc} Name=group-name,Values=DEV1_MAGENTO_WEB_IN,DP-MSS-ProtectedHosts,DP-MGMT-Host --query 'SecurityGroups[*].GroupId')
+							vpc=$(aws ec2 describe-vpcs --filters Name=vpc-id,Values=vpc-e5cf1c81 --query "Vpcs[0].VpcId")
+							subnet="subnet-e4f4c3bd"
+							security_groups="[sg-0d0a1ec5f29912f2f]"
 							packer build -var vpc_id=${vpc} -var subnet_id=${subnet} -var security_group_ids=${security_groups} -var revision=${BUILD_NUMBER} packer.json
             '''
 						script {
