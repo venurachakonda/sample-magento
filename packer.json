@@ -9,7 +9,7 @@
     "aws_access_key": "{{env `AWS_ACCESS_KEY_ID`}}",
     "aws_secret_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
     "vpc_region": null,
-    "source_ami": "DEV_MAGE_EE_RHEL7_HVM_PCI_HARDENED_20171031",
+    "source_ami": "ami-0450477b1f365279e",
     "instance_type": "",
     "ssh_username": ""
 
