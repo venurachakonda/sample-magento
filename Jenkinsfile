@@ -85,7 +85,7 @@ pipeline {
 							vpc=$(aws ec2 describe-vpcs --filters Name=vpc-id,Values=vpc-e5cf1c81 --query "Vpcs[0].VpcId")
 							subnet="subnet-e4f4c3bd"
 							security_groups="[sg-0d0a1ec5f29912f2f]"
-							packer build -var vpc_id=${vpc} -var subnet_id=${subnet} -var security_group_ids=${security_groups} -var revision=${BUILD_NUMBER} packer.json
+							/usr/local/bin/packer/packer build -var vpc_id=${vpc} -var subnet_id=${subnet} -var security_group_ids=${security_groups} -var revision=${BUILD_NUMBER} packer.json
             '''
         }
 			}
