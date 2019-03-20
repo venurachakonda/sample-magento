@@ -51,8 +51,8 @@
   "provisioners": [
     {
       "type": "file",
-      "source": "vuse-mage2-build.tar.bz2",
-      "destination": "/var/www/vhosts/temp/vuse-mage2-build.tar.bz2"
+      "source": "build.tar.bz2",
+      "destination": "/tmp/vuse-mage2-build.tar.bz2"
     },
     {
       "type": "shell",
