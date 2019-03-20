@@ -19,7 +19,7 @@ pipeline {
 			steps {
 		  	    script {
                     /* Check the GIT_BRANCH to compute build version and target environment */
-                    if (env.GIT_BRANCH ==~ 'origin/dev') {
+                    if (env.GIT_BRANCH ==~ 'origin/dev-packer') {
                       env.Target = 'dev'
                     } else if (env.GIT_BRANCH ==~ 'origin/qa') {
                       env.Target = 'qa'
