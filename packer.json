@@ -1,0 +1,70 @@
+{
+  "variables": {
+    "vuse_version": "1.0.0",
+    "environment": "dev",
+    "revision": "dev",
+    "vpc_id": null,
+    "subnet_id": null,
+    "security_group_ids": null,
+    "aws_access_key": "{{env `AWS_ACCESS_KEY_ID`}}",
+    "aws_secret_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
+    "vpc_region": null,
+    "source_ami": "DEV_MAGE_EE_RHEL7_HVM_PCI_HARDENED_20171031",
+    "instance_type": "",
+    "ssh_username": ""
+
+  },
+  "builders": [
+    {
+      "name": "builder-vuse-{{user `vuse_version`}}-{{user `revision`}}",
+      "type": "amazon-ebs",
+      "access_key": "{{user `aws_access_key`}}",
+      "secret_key": "{{user `aws_secret_key`}}",
+      "ena_support":     "true",
+      "region": "{{user `vpc_region`}}",
+      "vpc_id": "{{user `vpc_id`}}",
+      "subnet_id": "{{user `subnet_id`}}",
+      "security_group_ids": "{{user `security_group_ids`}}",
+      "source_ami": "{{user `source_ami`}}",
+      "instance_type":   "{{user `instance_type`}}",
+      "ssh_username": "{{user `ssh_username`}}",
+      "ami_name": "vuse-{{user `environment`}}-{{user `vuse_version`}}-{{user `revision`}}",
+      "ami_description": "Dev Magento AMI with code deployed from Jenkins build {{user `revision`}}",
+      "tags": {
+        "Time": "{{isotime \"2006-01-02-1504\"}}",
+        "Base_AMI_Name": "{{ .SourceAMIName }}",
+        "Name": "vuse-{{user `environment`}}-{{user `vuse_version`}}-{{user `revision`}}"
+      },
+      "ssh_timeout":     "10000s",
+      "ami_virtualization_type": "hvm",
+      "launch_block_device_mappings": [
+        {
+          "device_name": "/dev/sda1",
+          "volume_type": "gp2",
+          "volume_size": 50,
+          "delete_on_termination": true
+        }
+      ]
+    }
+  ],
+
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "vuse-mage2-build.tar.bz2",
+      "destination": "/var/www/vhosts/temp/vuse-mage2-build.tar.bz2"
+    },
+    {
+      "type": "shell",
+      "script": "scripts/deploy-vuse.sh"
+    }
+  ],
+
+  "post-processors": [
+    {
+      "type": "manifest",
+      "output": "manifest.json",
+      "strip_path": true
+    }
+  ]
+}
