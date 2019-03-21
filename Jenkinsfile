@@ -10,46 +10,59 @@ pipeline {
 		APP_NAME="vr-sample"
 		ASG_NAME="vr-asg1"
 	}
-    options {
-      ansiColor colorMapName: 'XTerm'
-    }
+  options {
+    ansiColor colorMapName: 'XTerm'
+  }
 
 	stages {
 		stage('Setup') {
 			steps {
-		  	    script {
-                    /* Check the GIT_BRANCH to compute build version and target environment */
-                    if (env.GIT_BRANCH ==~ 'origin/dev-packer') {
-                      env.Target = 'dev'
-                    } else if (env.GIT_BRANCH ==~ 'origin/qa') {
-                      env.Target = 'qa'
-                    } else if (env.GIT_BRANCH ==~ 'origin/uat') {
-                      env.Target = 'uat'
-										} else if (env.GIT_BRANCH == 'origin/master') {
-												env.Target = 'production'
-                    } else {
-                      error "Unknown branch type: ${env.GIT_BRANCH}"
-                    }
-							// Temporary Stub, find version of package
-		  	    	env.PACKAGE_VERSION = sh(
-			    		script: """
-			    			echo "1"
-			    		""",
-			    		returnStdout: true
-			    		).trim()
+		  	   script {
+                 /* Check the GIT_BRANCH to compute build version and target environment */
+                 if (env.GIT_BRANCH ==~ 'origin/dev-new-pack') {
+                   env.Target = 'dev'
+                 } else if (env.GIT_BRANCH ==~ 'origin/qa') {
+                   env.Target = 'qa'
+                 } else if (env.GIT_BRANCH ==~ 'origin/uat') {
+                   env.Target = 'uat'
+									} else if (env.GIT_BRANCH == 'origin/master') {
+											env.Target = 'production'
+                 } else {
+                   error "Unknown branch type: ${env.GIT_BRANCH}"
+                 }
 
-		  	    	/* create version with jenkins build number */
+		  	   	/* Set Params */
+		  	   	if ( env.Target == 'dev' ) {
+								env.DEV_VPC_ID = 'vpc-e5cf1c81'
+								env.SUBNET_NAME = 'subnet-e4f4c3bd'
+		  	   	} else if ( env.Target == 'qa' ) {
+		  	   	  env.VERSION     = 'v' + env.PACKAGE_VERSION + '-' + env.BUILD_NUMBER + '-rc'
+		  	   	} else if ( env.Target == 'uat' ) {
+		  	   	  env.VERSION     = 'v' + env.PACKAGE_VERSION + '-' + env.BUILD_NUMBER + '-rc'
+		  	   	} else if ( env.Target == 'production' ) {
+		  	   	  env.VERSION     = 'v' + env.PACKAGE_VERSION + '-' + env.BUILD_NUMBER + '-rc'
+		  	   	} else {
+		  	   	  error "Unknown Target: ${env.Target}"
+		  	   	}
+		      }
 
-		  	    	if ( env.Target == 'dev' || env.Target == 'qa' ) {
-		  	    	  env.VERSION     = 'v' + env.PACKAGE_VERSION + '-' + env.BUILD_NUMBER
-		  	    	} else if ( env.Target == 'uat' || env.Target == 'production' ) {
-		  	    	  env.VERSION     = 'v' + env.PACKAGE_VERSION + '-' + env.BUILD_NUMBER + '-rc'
-		  	    	} else {
-		  	    	  error "Unknown Target: ${env.Target}"
-		  	    	}
-		        }
+					withCredentials([[
+						 $class: 'AmazonWebServicesCredentialsBinding',
+						 credentialsId: 'aws-creds',
+						 accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+						 secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+					]]) {
+						 sh '''
+							 export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+							 VPC_ID=$(aws ec2 describe-vpcs --filters Name=vpc-id,Values=${DEV_VPC_ID} --query "Vpcs[0].VpcId" --output text)
+							 SUBNET_ID=$(aws ec2 describe-subnets --filter Name=vpc-id,Values=${DEV_VPC_ID} Name=subnet-id,Values=${SUBNET_NAME} --query 'Subnets[0].SubnetId' --output text)
+							 sed -i "s@VPC_ID@${VPC_ID}@" ami_vars.json
+							 sed -i "s@SUBNET_ID@${SUBNET_ID}@" ami_vars.json
+						 '''
+					}
 			}
 		}
+
 		stage('Checkout') {
 		  steps {
 		    deleteDir()
@@ -89,6 +102,13 @@ pipeline {
 							packer build -var vpc_id=${vpc} -var subnet_id=${subnet} -var security_group_ids=${security_groups} -var revision=${BUILD_NUMBER} -var 'vpc_region=us-east-1' -var ssh_username="centos" -var instance_type="t2.large" packer.json
             '''
         }
+			}
+
+			post {
+				failure {
+					sh 'echo Failed'
+					deleteDir()
+				}
 			}
 		}
 /*
