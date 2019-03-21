@@ -81,7 +81,7 @@ pipeline {
 		stage('Build Artifact') {
 		    steps {
 					sh '''
-					  tar cvjf --exclude=scripts "${FILE}" *
+					  tar cvjf  "${FILE}" * --exclude=scripts
 					'''
 					archiveArtifacts artifacts: '*.tar.bz2', fingerprint: true
 		    }
