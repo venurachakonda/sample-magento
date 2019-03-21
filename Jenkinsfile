@@ -64,8 +64,8 @@ pipeline {
 							 #VPC_ID=$(aws ec2 describe-vpcs --filters Name=vpc-id,Values=${DEV_VPC_ID} --query "Vpcs[0].VpcId" --output text)
 							 #SUBNET_ID=$(aws ec2 describe-subnets --filter Name=vpc-id,Values=${DEV_VPC_ID} Name=subnet-id,Values=${SUBNET_NAME} --query 'Subnets[0].SubnetId' --output text)
 							 template='{{"aws_default_region": "%s", "vpc_id": "%s", "subnet_id": "%s", "security_group_ids": "%s", "instance_type": "t2.large", "ssh_username": "centos", "source_ami": "%s"}}'
-               json_string=$(printf "$template" "$AWS_DEFAULT_REGION" "$VPC_ID" "$SUBNET_ID" "$SECURITY_GROUP_IDS" "$SOURCE_AMI")
-							 echo $json_string | jq -r | tee -a vars.json
+               json_string=$(printf "$template" "${AWS_DEFAULT_REGION}" "${VPC_ID}" "${SUBNET_ID}" "${SECURITY_GROUP_IDS}" "${SOURCE_AMI}")
+							 echo $json_string > vars.json
 						 '''
 					}
 			}
