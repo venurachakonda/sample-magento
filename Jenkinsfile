@@ -33,15 +33,10 @@ pipeline {
 
 		  	   	/* Set Params */
 		  	   	if ( env.Target == 'dev' ) {
-							environment {
-								VPC_ID = 'vpc-e5cf1c81'
-								SUBNET_ID = 'subnet-e4f4c3bd'
-								SECURITY_GROUP_IDS = 'sg-0d0a1ec5f29912f2f'
-								SOURCE_AMI = 'ami-0450477b1f365279e'
-								
-							}
-								env.vpc_id = 'vpc-e5cf1c81'
-								env.SUBNET_NAME = 'subnet-e4f4c3bd'
+								env.VPC_ID = 'vpc-e5cf1c81'
+								env.SUBNET_ID = 'subnet-e4f4c3bd'
+								env.SECURITY_GROUP_IDS = 'sg-0d0a1ec5f29912f2f'
+								env.SOURCE_AMI = 'ami-0450477b1f365279e'
 		  	   	} else if ( env.Target == 'qa' ) {
 		  	   	  env.VERSION     = 'v' + env.PACKAGE_VERSION + '-' + env.BUILD_NUMBER + '-rc'
 		  	   	} else if ( env.Target == 'uat' ) {
