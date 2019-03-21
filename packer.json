@@ -8,8 +8,8 @@
     "security_group_ids": null,
     "aws_access_key": "{{env `AWS_ACCESS_KEY_ID`}}",
     "aws_secret_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
-    "vpc_region": null,
-    "source_ami": "ami-0450477b1f365279e",
+    "aws_default_region": null,
+    "source_ami": "",
     "instance_type": "",
     "ssh_username": ""
 
@@ -21,7 +21,7 @@
       "access_key": "{{user `aws_access_key`}}",
       "secret_key": "{{user `aws_secret_key`}}",
       "ena_support":     "true",
-      "region": "{{user `vpc_region`}}",
+      "region": "{{user `aws_default_region`}}",
       "vpc_id": "{{user `vpc_id`}}",
       "subnet_id": "{{user `subnet_id`}}",
       "security_group_ids": "{{user `security_group_ids`}}",

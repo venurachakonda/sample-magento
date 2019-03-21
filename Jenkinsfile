@@ -33,7 +33,14 @@ pipeline {
 
 		  	   	/* Set Params */
 		  	   	if ( env.Target == 'dev' ) {
-								env.DEV_VPC_ID = 'vpc-e5cf1c81'
+							environment {
+								VPC_ID = 'vpc-e5cf1c81'
+								SUBNET_ID = 'subnet-e4f4c3bd'
+								SECURITY_GROUP_IDS = 'sg-0d0a1ec5f29912f2f'
+								SOURCE_AMI = 'ami-0450477b1f365279e'
+								
+							}
+								env.vpc_id = 'vpc-e5cf1c81'
 								env.SUBNET_NAME = 'subnet-e4f4c3bd'
 		  	   	} else if ( env.Target == 'qa' ) {
 		  	   	  env.VERSION     = 'v' + env.PACKAGE_VERSION + '-' + env.BUILD_NUMBER + '-rc'
@@ -54,11 +61,11 @@ pipeline {
 					]]) {
 						 sh '''
 							 export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-							 VPC_ID=$(aws ec2 describe-vpcs --filters Name=vpc-id,Values=${DEV_VPC_ID} --query "Vpcs[0].VpcId" --output text)
-							 SUBNET_ID=$(aws ec2 describe-subnets --filter Name=vpc-id,Values=${DEV_VPC_ID} Name=subnet-id,Values=${SUBNET_NAME} --query 'Subnets[0].SubnetId' --output text)
-							 template='{"vpc_id":"%s","subnet_id":"%s"}'
-               json_string=$(printf "$template" "$VPC_ID" "$SUBNET_ID")
-							 echo $json_string
+							 #VPC_ID=$(aws ec2 describe-vpcs --filters Name=vpc-id,Values=${DEV_VPC_ID} --query "Vpcs[0].VpcId" --output text)
+							 #SUBNET_ID=$(aws ec2 describe-subnets --filter Name=vpc-id,Values=${DEV_VPC_ID} Name=subnet-id,Values=${SUBNET_NAME} --query 'Subnets[0].SubnetId' --output text)
+							 template='{{"aws_default_region": "%s", "vpc_id": "%s", "subnet_id": "%s", "security_group_ids": "%s", "instance_type": "t2.large", "ssh_username": "centos", "source_ami": "%s"}}'
+               json_string=$(printf "$template" "$AWS_DEFAULT_REGION" "$VPC_ID" "$SUBNET_ID" "$SECURITY_GROUP_IDS" "$SOURCE_AMI")
+							 echo $json_string | jq -r > vars.json
 						 '''
 					}
 			}
