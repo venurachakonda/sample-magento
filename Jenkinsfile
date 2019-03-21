@@ -45,8 +45,13 @@ pipeline {
 								env.SUBNET_ID = sh( script: ''' cat env-data.json | jq -r ".${env.Target}.subnet_id'" ''', returnStdout: true ).trim()
 								env.SECURITY_GROUP_IDS = sh( script: ''' cat env-data.json | jq -r ".${env.Target}.security_group_ids'" ''', returnStdout: true ).trim()
 								env.SOURCE_AMI = sh( script: ''' cat env-data.json | jq -r ".${env.Target}.source_ami'" ''', returnStdout: true ).trim()
+
 		  	   	} else if ( env.Target == 'qa' ) {
-		  	   	  env.VERSION     = 'v' + env.PACKAGE_VERSION + '-' + env.BUILD_NUMBER + '-rc'
+							env.VPC_ID = sh( script: ''' cat env-data.json | jq -r ".${env.Target}.vpc_id'" ''', returnStdout: true ).trim()
+							env.SUBNET_ID = sh( script: ''' cat env-data.json | jq -r ".${env.Target}.subnet_id'" ''', returnStdout: true ).trim()
+							env.SECURITY_GROUP_IDS = sh( script: ''' cat env-data.json | jq -r ".${env.Target}.security_group_ids'" ''', returnStdout: true ).trim()
+							env.SOURCE_AMI = sh( script: ''' cat env-data.json | jq -r ".${env.Target}.source_ami'" ''', returnStdout: true ).trim()
+
 		  	   	} else if ( env.Target == 'uat' ) {
 		  	   	  env.VERSION     = 'v' + env.PACKAGE_VERSION + '-' + env.BUILD_NUMBER + '-rc'
 		  	   	} else if ( env.Target == 'production' ) {
@@ -64,8 +69,6 @@ pipeline {
 					]]) {
 						 sh '''
 							 export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-							 #VPC_ID=$(aws ec2 describe-vpcs --filters Name=vpc-id,Values=${DEV_VPC_ID} --query "Vpcs[0].VpcId" --output text)
-							 #SUBNET_ID=$(aws ec2 describe-subnets --filter Name=vpc-id,Values=${DEV_VPC_ID} Name=subnet-id,Values=${SUBNET_NAME} --query 'Subnets[0].SubnetId' --output text)
 							 template='{"aws_default_region": "%s", "vpc_id": "%s", "subnet_id": "%s", "security_group_ids": "%s", "instance_type": "t2.large", "ssh_username": "centos", "source_ami": "%s"}'
                json_string=$(printf "$template" "${AWS_DEFAULT_REGION}" "${VPC_ID}" "${SUBNET_ID}" "${SECURITY_GROUP_IDS}" "${SOURCE_AMI}")
 							 echo $json_string | jq -r "." | tee -a vars-packer.json
@@ -78,7 +81,7 @@ pipeline {
 		stage('Build Artifact') {
 		    steps {
 					sh '''
-					  tar cvjf "${FILE}" *
+					  tar cvjf --exclude=scripts "${FILE}" *
 					'''
 					archiveArtifacts artifacts: '*.tar.bz2', fingerprint: true
 		    }
@@ -90,7 +93,7 @@ pipeline {
 				}
 	  }
 
-/*
+
 		stage('Build AMI') {
 			steps {
 		    withCredentials([[
@@ -102,10 +105,7 @@ pipeline {
             sh '''
 		    		  export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
 							source ${HOME}/.bashrc
-							vpc=$(aws ec2 describe-vpcs --filters Name=vpc-id,Values=vpc-e5cf1c81 --query "Vpcs[0].VpcId")
-							subnet=subnet-e4f4c3bd
-							security_groups="sg-0d0a1ec5f29912f2f"
-							packer build -var vpc_id=${vpc} -var subnet_id=${subnet} -var security_group_ids=${security_groups} -var revision=${BUILD_NUMBER} -var 'vpc_region=us-east-1' -var ssh_username="centos" -var instance_type="t2.large" packer.json
+							packer build -var-file=vars-packer.json -var revision=${BUILD_NUMBER} packer.json
             '''
         }
 			}
@@ -117,7 +117,7 @@ pipeline {
 				}
 			}
 		}
-*/
+
 /*
 		stage('Create AMI') {
 			steps {
