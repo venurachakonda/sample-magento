@@ -52,13 +52,13 @@ pipeline {
 						 accessKeyVariable: 'AWS_ACCESS_KEY_ID',
 						 secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
 					]]) {
-						 sh """
+						 sh '''
 							 export AWS_ACCESS_KEY_ID=\${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=\${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=\${AWS_DEFAULT_REGION}
 							 VPC_ID=$(aws ec2 describe-vpcs --filters Name=vpc-id,Values=\${DEV_VPC_ID} --query "Vpcs[0].VpcId" --output text)
 							 SUBNET_ID=$(aws ec2 describe-subnets --filter Name=vpc-id,Values=\${DEV_VPC_ID} Name=subnet-id,Values=\${SUBNET_NAME} --query 'Subnets[0].SubnetId' --output text)
-							 sed -i 's@VPC_ID@\${VPC_ID}@' ami_vars.json
-							 sed -i 's@SUBNET_ID@\${SUBNET_ID}@' ami_vars.json
-						 """
+							 sed -i \'s@VPC_ID@\${VPC_ID}@\' ami_vars.json
+							 sed -i \'s@SUBNET_ID@\${SUBNET_ID}@\' ami_vars.json
+						 '''
 					}
 			}
 		}
