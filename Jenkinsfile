@@ -41,16 +41,16 @@ pipeline {
 
 		  	   	/* Set Params */
 		  	   	if ( env.Target == 'dev' ) {
-								env.VPC_ID = sh( script: ''' cat env-data.json | jq -r ".${env.Target}.vpc_id'" ''', returnStdout: true ).trim()
-								env.SUBNET_ID = sh( script: ''' cat env-data.json | jq -r ".${env.Target}.subnet_id'" ''', returnStdout: true ).trim()
-								env.SECURITY_GROUP_IDS = sh( script: ''' cat env-data.json | jq -r ".${env.Target}.security_group_ids'" ''', returnStdout: true ).trim()
-								env.SOURCE_AMI = sh( script: ''' cat env-data.json | jq -r ".${env.Target}.source_ami'" ''', returnStdout: true ).trim()
+								env.VPC_ID = sh( script: ''' cat env-data.json | jq -r ".${Target}.vpc_id" ''', returnStdout: true ).trim()
+								env.SUBNET_ID = sh( script: ''' cat env-data.json | jq -r ".${Target}.subnet_id" ''', returnStdout: true ).trim()
+								env.SECURITY_GROUP_IDS = sh( script: ''' cat env-data.json | jq -r ".${Target}.security_group_ids" ''', returnStdout: true ).trim()
+								env.SOURCE_AMI = sh( script: ''' cat env-data.json | jq -r ".${Target}.source_ami" ''', returnStdout: true ).trim()
 
 		  	   	} else if ( env.Target == 'qa' ) {
-							env.VPC_ID = sh( script: ''' cat env-data.json | jq -r ".${env.Target}.vpc_id'" ''', returnStdout: true ).trim()
-							env.SUBNET_ID = sh( script: ''' cat env-data.json | jq -r ".${env.Target}.subnet_id'" ''', returnStdout: true ).trim()
-							env.SECURITY_GROUP_IDS = sh( script: ''' cat env-data.json | jq -r ".${env.Target}.security_group_ids'" ''', returnStdout: true ).trim()
-							env.SOURCE_AMI = sh( script: ''' cat env-data.json | jq -r ".${env.Target}.source_ami'" ''', returnStdout: true ).trim()
+							env.VPC_ID = sh( script: ''' cat env-data.json | jq -r ".${Target}.vpc_id" ''', returnStdout: true ).trim()
+							env.SUBNET_ID = sh( script: ''' cat env-data.json | jq -r ".${Target}.subnet_id" ''', returnStdout: true ).trim()
+							env.SECURITY_GROUP_IDS = sh( script: ''' cat env-data.json | jq -r ".${Target}.security_group_ids" ''', returnStdout: true ).trim()
+							env.SOURCE_AMI = sh( script: ''' cat env-data.json | jq -r ".${Target}.source_ami" ''', returnStdout: true ).trim()
 
 		  	   	} else if ( env.Target == 'uat' ) {
 		  	   	  env.VERSION     = 'v' + env.PACKAGE_VERSION + '-' + env.BUILD_NUMBER + '-rc'
