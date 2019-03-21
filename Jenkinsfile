@@ -41,10 +41,10 @@ pipeline {
 
 		  	   	/* Set Params */
 		  	   	if ( env.Target == 'dev' ) {
-								env.VPC_ID = 'vpc-e5cf1c81'
-								env.SUBNET_ID = 'subnet-e4f4c3bd'
-								env.SECURITY_GROUP_IDS = 'sg-0d0a1ec5f29912f2f'
-								env.SOURCE_AMI = 'ami-0450477b1f365279e'
+								env.VPC_ID = sh( script: ''' cat env-data.json | jq -r ".${env.Target}.vpc_id'" ''', returnStdout: true ).trim()
+								env.SUBNET_ID = sh( script: ''' cat env-data.json | jq -r ".${env.Target}.subnet_id'" ''', returnStdout: true ).trim()
+								env.SECURITY_GROUP_IDS = sh( script: ''' cat env-data.json | jq -r ".${env.Target}.security_group_ids'" ''', returnStdout: true ).trim()
+								env.SOURCE_AMI = sh( script: ''' cat env-data.json | jq -r ".${env.Target}.source_ami'" ''', returnStdout: true ).trim()
 		  	   	} else if ( env.Target == 'qa' ) {
 		  	   	  env.VERSION     = 'v' + env.PACKAGE_VERSION + '-' + env.BUILD_NUMBER + '-rc'
 		  	   	} else if ( env.Target == 'uat' ) {

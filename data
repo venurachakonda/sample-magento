@@ -1,0 +1,28 @@
+aws_region = "us-east-1"
+region = "us-east-1"
+environment = "DEV-MAGENTO"
+keyname = "RJRT-DEV-MAGENTO-MASTER"
+remote-state-bucket = "rjrt-tfstate"
+remote-state-file = "rjrt-dev"
+p1d0mag-instance_type = "m4.large"
+p1d1mag-instance_type = "m4.large"
+
+vpc_id = "vpc-4e44b62a"
+
+priv_subnet_a_id = "subnet-68782631"
+priv_subnet_c_id = "subnet-a5b8f58e"
+
+pub_subnet_a_id = "subnet-69782630"
+pub_subnet_c_id = "subnet-81c07eab"
+
+wm-dev-is-in-sg = "sg-5a3b5022"
+blog-elb-sg-in-a = "sg-477cc539"
+
+dp-mgmt-sg = "sg-abcdb1cc"
+dp-mss-sg = "sg-1a067b7d"
+
+blog_rds_subnetgroup = "default-vpc-4e44b62a"
+# in separate file
+#blog_rds_pw = ""
+
+magento_certificate_arn = "arn:aws:iam::274941441461:server-certificate/star.raimktg.com-Other-VuseVapor"

@@ -1,0 +1,21 @@
+{
+  "dev": {
+    "aws_default_region": "us-east-1",
+    "vpc_id": "vpc-e5cf1c81",
+    "subnet_id": "subnet-e4f4c3bd",
+    "security_group_ids": "sg-0d0a1ec5f29912f2f",
+    "instance_type": "t2.large",
+    "ssh_username": "centos",
+    "source_ami": "ami-0450477b1f365279e"
+  },
+
+  "qa": {
+    "aws_default_region": "us-east-1",
+    "vpc_id": "vpc-e5cf1c81",
+    "subnet_id": "subnet-e4f4c3bd",
+    "security_group_ids": "sg-0d0a1ec5f29912f2f",
+    "instance_type": "t2.large",
+    "ssh_username": "centos",
+    "source_ami": "ami-0450477b1f365279e"    
+  }
+}
