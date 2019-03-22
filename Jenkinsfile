@@ -105,8 +105,8 @@ pipeline {
 					// TODO: update/remove the branch name
 					git branch: "master", credentialsId: 'automation', url: 'git@bitbucket.org:vrachakonda/raybon.git'
 				}
-				sh "sed -i 's#DIR_NAME#${Target}#' raybon-template/01-packer/vars.yml"
-				sh "sed -i 's#VERSION#${BUILD_NUMBER}#' raybon-template/01-packer/vars.yml"
+				sh "sed -i 's#DIR_NAME#${Target}#' raybon-template/01-packer/ansible/vars.yml"
+				sh "sed -i 's#VERSION#${BUILD_NUMBER}#' raybon-template/01-packer/ansible/vars.yml"
 		    withCredentials([[
             $class: 'AmazonWebServicesCredentialsBinding',
             credentialsId: 'aws-creds',
