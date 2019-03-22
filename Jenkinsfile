@@ -86,14 +86,14 @@ pipeline {
 						git branch: "master", credentialsId: 'automation', url: 'git@bitbucket.org:vrachakonda/raybon.git'
 					}
 					sh '''
-					  tar cvjf  "${FILE}" * --exclude=raybon-template
+					  tar cvjf  raybon-template/01-packer/"${FILE}" * --exclude=raybon-template
 					'''
-					archiveArtifacts artifacts: '*.tar.bz2', fingerprint: true
+					archiveArtifacts artifacts: 'raybon-template/01-packer/*.tar.bz2', fingerprint: true
 		    }
 
 				post {
 					success {
-						archiveArtifacts(artifacts: '*.tar.bz2', fingerprint: true)
+						archiveArtifacts(artifacts: 'raybon-template/01-packer/*.tar.bz2', fingerprint: true)
 					}
 				}
 	  }
