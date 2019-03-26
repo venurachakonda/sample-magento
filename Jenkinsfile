@@ -2,7 +2,7 @@ pipeline {
 	agent any
 
 	environment {
-		AWS_DEFAULT_REGION="us-west-2"
+		AWS_DEFAULT_REGION="us-east-1"
 		AWS_BIN = '/usr/bin/aws'
 		FILE='vuse-mage2-build.tar.bz2'
 		JOB_NAME="${env.JOB_NAME}"
@@ -86,14 +86,14 @@ pipeline {
 						git branch: "master", credentialsId: 'automation', url: 'git@bitbucket.org:vrachakonda/raybon.git'
 					}
 					sh '''
-					  tar cvjf  raybon-template/01-packer/"${FILE}" * --exclude=raybon-template
+					  tar cvjf "${FILE}" * --exclude=raybon-template
 					'''
-					archiveArtifacts artifacts: 'raybon-template/01-packer/*.tar.bz2', fingerprint: true
+					archiveArtifacts artifacts: '*.tar.bz2', fingerprint: true
 		    }
 
 				post {
 					success {
-						archiveArtifacts(artifacts: 'raybon-template/01-packer/*.tar.bz2', fingerprint: true)
+						archiveArtifacts(artifacts: '*.tar.bz2', fingerprint: true)
 					}
 				}
 	  }
@@ -116,10 +116,16 @@ pipeline {
             sh '''
 		    		  export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
 							source ${HOME}/.bashrc
+							cp *.tar.bz2 raybon-template/01-packer
 							cd raybon-template/01-packer
 							packer validate -var-file=vars-packer.json -var revision=${BUILD_NUMBER} packer.json
 							packer build -var-file=vars-packer.json -var revision=${BUILD_NUMBER} packer.json
             '''
+						script {
+							env.IMAGE_ID = sh( script: ''' cat raybon-template/01-packer/manifest.json | jq -r '.builds[-1].artifact_id' |  cut -d':' -f2 ''', returnStdout: true ).trim()
+							echo ${IMAGE_ID}
+						}
+
         }
 			}
 
