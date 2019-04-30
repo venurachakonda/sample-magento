@@ -113,7 +113,7 @@ pipeline {
 				}
 				sh "sed -i 's#DIR_NAME#${Target}#' raybon-template/01-packer/ansible/vars.yml"
 				sh "sed -i 's#VERSION#${BUILD_NUMBER}#' raybon-template/01-packer/ansible/vars.yml"
-				sh "sed -i 's#ENVIRONMENT#${Target}#' rax-template/01-packer/ansible/vars.yml"
+				sh "sed -i 's#ENVIRONMENT#${Target}#' raybon-template/01-packer/ansible/vars.yml"
 
 		    withCredentials([[
             $class: 'AmazonWebServicesCredentialsBinding',
