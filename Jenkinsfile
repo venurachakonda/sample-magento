@@ -156,7 +156,7 @@ pipeline {
                 ]]) {
                   sh '''
 		          export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION};
-			        cd raybon-template && ASG_NAME="$ASG_NAME" make -e create-lc
+			        cd raybon-template/05-util-scripts && ASG_NAME="$ASG_NAME" make -e create-lc
                   '''
                 }
 			}
@@ -172,7 +172,7 @@ pipeline {
         	    ]]) {
                 sh '''
 		          export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-			      cd raybon-template && ASG_NAME="$ASG_NAME" make -e update-asg
+			      cd raybon-template/05-util-scripts && ASG_NAME="$ASG_NAME" make -e update-asg
 			    '''
                 }
 			}
@@ -196,7 +196,7 @@ pipeline {
         	    ]]) {
                   sh '''
 		          export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-			      	cd raybon-template && ASG_NAME="$ASG_NAME" make -e scale-up
+			      	cd raybon-template/05-util-scripts && ASG_NAME="$ASG_NAME" make -e scale-up
 			      '''
           		}
 			}
@@ -220,7 +220,7 @@ pipeline {
         	    ]]) {
                   sh '''
 		          export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-			      	cd raybon-template && ASG_NAME="$ASG_NAME" make -e scale-down
+			      	cd raybon-template/05-util-scripts && ASG_NAME="$ASG_NAME" make -e scale-down
 			      '''
           		}
 			}
