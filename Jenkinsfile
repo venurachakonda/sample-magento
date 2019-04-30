@@ -7,6 +7,7 @@ pipeline {
 		FILE='vuse-mage2-build.tar.bz2'
 		JOB_NAME="${env.JOB_NAME}"
 		BUILD_NUMBER="${env.BUILD_NUMBER}"
+		ASG_NAME="VR1D1MAG"
 	}
   options {
     ansiColor colorMapName: 'XTerm'
@@ -47,6 +48,7 @@ pipeline {
 								env.SUBNET_ID = sh( script: ''' cat raybon-template/02-data/env-data.json | jq -r ".${Target}.subnet_id" ''', returnStdout: true ).trim()
 								env.SECURITY_GROUP_IDS = sh( script: ''' cat raybon-template/02-data/env-data.json | jq -r ".${Target}.security_group_ids" ''', returnStdout: true ).trim()
 								env.SOURCE_AMI = sh( script: ''' cat raybon-template/02-data/env-data.json | jq -r ".${Target}.source_ami" ''', returnStdout: true ).trim()
+								env.APP_NAME = "${env.Target}-vuse-mage2"
 
 		  	   	} else if ( env.Target == 'qa' ) {
 							env.VPC_ID = sh( script: ''' cat raybon-template/02-data/env-data.json | jq -r ".${Target}.vpc_id" ''', returnStdout: true ).trim()
@@ -105,8 +107,14 @@ pipeline {
 					// TODO: update/remove the branch name
 					git branch: "master", credentialsId: 'automation', url: 'git@bitbucket.org:vrachakonda/raybon.git'
 				}
+
+				withCredentials([string(credentialsId: 'VAULT_PASS', variable: 'TOKEN')]) {
+					 sh ''' echo "${TOKEN}" > raybon-template/01-packer/.vault-password '''
+				}
 				sh "sed -i 's#DIR_NAME#${Target}#' raybon-template/01-packer/ansible/vars.yml"
 				sh "sed -i 's#VERSION#${BUILD_NUMBER}#' raybon-template/01-packer/ansible/vars.yml"
+				sh "sed -i 's#ENVIRONMENT#${Target}#' rax-template/01-packer/ansible/vars.yml"
+
 		    withCredentials([[
             $class: 'AmazonWebServicesCredentialsBinding',
             credentialsId: 'aws-creds',
@@ -123,7 +131,7 @@ pipeline {
             '''
 						script {
 							env.IMAGE_ID = sh( script: ''' cat raybon-template/01-packer/manifest.json | jq -r '.builds[-1].artifact_id' |  cut -d':' -f2 ''', returnStdout: true ).trim()
-							echo ${IMAGE_ID}
+							echo "Image ID: ${IMAGE_ID}"
 						}
 
         }
@@ -137,6 +145,70 @@ pipeline {
 			}
 		}
 
+		stage('Create New Launch Configuration') {
+			steps {
+				environment name: 'IMAGE_ID', value: "${env.IMAGE_ID}"
+		        withCredentials([[
+                  $class: 'AmazonWebServicesCredentialsBinding',
+                  credentialsId: 'aws-creds',
+                  accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                  secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                ]]) {
+                  sh '''
+		          export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION};
+			      source ./scripts/functions.sh
+			      capture_old_launch_config
+			      create_new_launch_configuration
+                  '''
+                }
+			}
+		}
+
+		stage('Update ASG') {
+			steps {
+		        withCredentials([[
+                  $class: 'AmazonWebServicesCredentialsBinding',
+                  credentialsId: 'aws-creds',
+                  accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                  secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+        	    ]]) {
+                sh '''
+		          export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+			      source ./scripts/functions.sh
+			      update_asg_launch_configuration
+			    '''
+                }
+			}
+		}
+
+		stage('Approval') {
+			steps {
+				timeout(time: 2, unit: 'HOURS') {
+					input 'Do you want to rotate instances with new AMI?'
+				}
+			}
+		}
+
+		stage('Scale up ASG') {
+			steps {
+		        withCredentials([[
+                $class: 'AmazonWebServicesCredentialsBinding',
+                credentialsId: 'aws-creds',
+                accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+        	    ]]) {
+                  sh '''
+		          export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+			      	source ./scripts/functions.sh
+			      	check_aws_connectivity
+			      	capture_asg_nodes
+			      	check_asg_state
+			      	double_capacity
+			      	wait_for_desired_nodes
+			      '''
+          		}
+			}
+		}
 /*
 		stage('Create AMI') {
 			steps {
