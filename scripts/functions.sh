@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-AWS_BIN="/usr/local/bin/aws"
-OWNER_ID="274941441461"
+AWS_BIN="/usr/bin/aws"
+OWNER_ID="747476456671"
 NODE_SLEEP_INTERVAL=15
 NODE_INITIAL_WAIT_PERIOD=10
 
