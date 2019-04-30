@@ -156,9 +156,7 @@ pipeline {
                 ]]) {
                   sh '''
 		          export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION};
-			      source ./scripts/functions.sh
-			      capture_old_launch_config
-			      create_new_launch_configuration
+			        cd raybon-template && ASG_NAME="$ASG_NAME" make -e create-lc
                   '''
                 }
 			}
@@ -174,8 +172,7 @@ pipeline {
         	    ]]) {
                 sh '''
 		          export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-			      source ./scripts/functions.sh
-			      update_asg_launch_configuration
+			      cd raybon-template && ASG_NAME="$ASG_NAME" make -e update-asg
 			    '''
                 }
 			}
@@ -184,7 +181,7 @@ pipeline {
 		stage('Approval') {
 			steps {
 				timeout(time: 2, unit: 'HOURS') {
-					input 'Do you want to rotate instances with new AMI?'
+					input 'Do you want to Scale up instances with new AMI?'
 				}
 			}
 		}
@@ -199,12 +196,46 @@ pipeline {
         	    ]]) {
                   sh '''
 		          export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-			      	source ./scripts/functions.sh
-			      	check_aws_connectivity
-			      	capture_asg_nodes
-			      	check_asg_state
-			      	double_capacity
-			      	wait_for_desired_nodes
+			      	cd raybon-template && ASG_NAME="$ASG_NAME" make -e scale-up
+			      '''
+          		}
+			}
+		}
+
+		stage('Approval') {
+			steps {
+				timeout(time: 2, unit: 'HOURS') {
+					input 'Do you want to Scale down old instances?'
+				}
+			}
+		}
+
+		stage('Scale down ASG') {
+			steps {
+		        withCredentials([[
+                $class: 'AmazonWebServicesCredentialsBinding',
+                credentialsId: 'aws-creds',
+                accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+        	    ]]) {
+                  sh '''
+		          export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+			      	cd raybon-template && ASG_NAME="$ASG_NAME" make -e scale-down
+			      '''
+          		}
+			}
+		}
+
+		stage('clean up') {
+			steps {
+		        withCredentials([[
+                $class: 'AmazonWebServicesCredentialsBinding',
+                credentialsId: 'aws-creds',
+                accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+        	    ]]) {
+                  sh '''
+		                rm -f raybon-template/01-packer/.vault-password
 			      '''
           		}
 			}
