@@ -32,6 +32,27 @@ function tag_image() {
   ${AWS_BIN} ec2 create-tags --resources ${IMAGE_ID} --tags Key=Name,Value="${JOB_NAME}-${BUILD_NUMBER}"   Key=asg,Value=${ASG_NAME}
 }
 
+function get_device_mappings() {
+  case ${Target} in
+    dev )
+      BLOCK_DEVICE_MAPPINGS="'[{\"DeviceName\": \"/dev/sda1\",\"Ebs\":{\"VolumeSize\":50,\"VolumeType\":\"gp2\",\"DeleteOnTermination\":true}}]'"
+      ;;
+    qa )
+      BLOCK_DEVICE_MAPPINGS=""
+      ;;
+    uat)
+      BLOCK_DEVICE_MAPPINGS=""
+      ;;
+    production)
+      BLOCK_DEVICE_MAPPINGS=""
+      ;;
+    *)
+      echo "invalid environment $Target"
+      ;;
+  esac
+}
+
+
 function check_image_status() {
   check_image_status=$(${AWS_BIN} ec2 describe-images --image-ids ${IMAGE_ID} --owners ${OWNER_ID}  | jq -r .Images[].State)
 
@@ -54,6 +75,7 @@ function check_image_status() {
 }
 
 function create_new_launch_configuration() {
+  get_device_mappings
   ${AWS_BIN} autoscaling create-launch-configuration \
     --launch-configuration-name "${APP_NAME}-${BUILD_NUMBER}-lc" \
     --key-name "${KEY_NAME}" \
@@ -61,7 +83,7 @@ function create_new_launch_configuration() {
     --instance-type "$INSTANCE_TYPE" \
     --security-groups ${SECURITY_GROUPS} \
     --user-data "${USER_DATA}" \
-    --block-device-mappings "[{\"DeviceName\": \"/dev/sda\",\"Ebs\":{\"VolumeSize\":50,\"VolumeType\":\"gp2\",\"DeleteOnTermination\":true}}]"
+    --block-device-mappings "${BLOCK_DEVICE_MAPPINGS}"
 }
 
 function update_asg_launch_configuration() {
