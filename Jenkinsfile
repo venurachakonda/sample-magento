@@ -109,7 +109,7 @@ pipeline {
 				}
 
 				withCredentials([string(credentialsId: 'VAULT_PASS', variable: 'TOKEN')]) {
-					 sh ''' echo "${TOKEN}" > raybon-template/01-packer/.vault-password '''
+					 sh ''' echo "${TOKEN}" > raybon-template/01-packer/.tmpvault '''
 				}
 				sh "sed -i 's#DIR_NAME#${Target}#' raybon-template/01-packer/ansible/vars.yml"
 				sh "sed -i 's#VERSION#${BUILD_NUMBER}#' raybon-template/01-packer/ansible/vars.yml"
@@ -234,9 +234,7 @@ pipeline {
                 accessKeyVariable: 'AWS_ACCESS_KEY_ID',
                 secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
         	    ]]) {
-                  sh '''
-		                rm -f raybon-template/01-packer/.vault-password
-			      '''
+                  sh 'rm -f raybon-template/01-packer/.tmpvault'
           		}
 			}
 		}
