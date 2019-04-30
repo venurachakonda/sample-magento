@@ -178,7 +178,7 @@ pipeline {
 			}
 		}
 
-		stage('Approval') {
+		stage('Approve Scale up') {
 			steps {
 				timeout(time: 2, unit: 'HOURS') {
 					input 'Do you want to Scale up instances with new AMI?'
@@ -202,7 +202,7 @@ pipeline {
 			}
 		}
 
-		stage('Approval') {
+		stage('Approve rotate') {
 			steps {
 				timeout(time: 2, unit: 'HOURS') {
 					input 'Do you want to Scale down old instances?'
