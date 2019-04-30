@@ -35,7 +35,7 @@ function tag_image() {
 function get_device_mappings() {
   case ${Target} in
     dev )
-      BLOCK_DEVICE_MAPPINGS="'[{\"DeviceName\": \"/dev/sda1\",\"Ebs\":{\"VolumeSize\":50,\"VolumeType\":\"gp2\",\"DeleteOnTermination\":true}}]'"
+      BLOCK_DEVICE_MAPPINGS="[{\"DeviceName\": \"/dev/sda1\",\"Ebs\":{\"VolumeSize\":50,\"VolumeType\":\"gp2\",\"DeleteOnTermination\":true}}]"
       ;;
     qa )
       BLOCK_DEVICE_MAPPINGS=""
