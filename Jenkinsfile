@@ -234,7 +234,7 @@ pipeline {
                 accessKeyVariable: 'AWS_ACCESS_KEY_ID',
                 secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
         	    ]]) {
-                  sh 'rm -f raybon-template/01-packer/.tmpvault'
+                  sh 'cd raybon-template/05-util-scripts/utils && bash cleanup.sh'
           		}
 			}
 		}
