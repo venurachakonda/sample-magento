@@ -226,6 +226,22 @@ pipeline {
 			}
 		}
 
+		stage('setup cron') {
+			steps {
+		        withCredentials([[
+                $class: 'AmazonWebServicesCredentialsBinding',
+                credentialsId: 'aws-creds',
+                accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+        	    ]]) {
+								sh '''
+						export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+						cd raybon-template/05-util-scripts && ASG_NAME="$ASG_NAME" make -e setup-cron
+					'''
+          		}
+			}
+		}
+
 		stage('clean up') {
 			steps {
 		        withCredentials([[
@@ -238,64 +254,5 @@ pipeline {
           		}
 			}
 		}
-/*
-		stage('Create AMI') {
-			steps {
-		    withCredentials([[
-            $class: 'AmazonWebServicesCredentialsBinding',
-            credentialsId: 'aws-creds',
-            accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-            secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-        ]]) {
-            sh '''
-		    		  export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-							source ./scripts/functions.sh
-							create_image > image_id.txt
-							check_image_status
-							tag_image
-            '''
-						script {
-							env.IMAGE_ID = readFile('image_id.txt').trim()
-						}
-        }
-			}
-		}
-
-		stage('Create New Launch Configuration') {
-			steps {
-				environment name: 'IMAGE_ID', value: "${env.IMAGE_ID}"
-		    withCredentials([[
-            $class: 'AmazonWebServicesCredentialsBinding',
-            credentialsId: 'aws-creds',
-            accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-            secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-        ]]) {
-            sh '''
-		    		  export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION};
-							source ./scripts/functions.sh
-							capture_old_launch_config
-							create_new_launch_configuration
-            '''
-        }
-			}
-		}
-
-		stage('Update ASG') {
-			steps {
-		    withCredentials([[
-            $class: 'AmazonWebServicesCredentialsBinding',
-            credentialsId: 'aws-creds',
-            accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-            secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-        ]]) {
-            sh '''
-		    		  export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} ; export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} ; export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-							source ./scripts/functions.sh
-							update_asg_launch_configuration
-						'''
-        }
-			}
-		}
-*/
 	}
 }
