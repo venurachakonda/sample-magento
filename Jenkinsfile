@@ -178,13 +178,7 @@ pipeline {
 			}
 		}
 
-		stage('Approve Scale up') {
-			steps {
-				timeout(time: 2, unit: 'HOURS') {
-					input 'Do you want to Scale up instances with new AMI?'
-				}
-			}
-		}
+
 
 		stage('Scale up ASG') {
 			steps {
@@ -202,13 +196,6 @@ pipeline {
 			}
 		}
 
-		stage('Approve rotate') {
-			steps {
-				timeout(time: 2, unit: 'HOURS') {
-					input 'Do you want to Scale down old instances?'
-				}
-			}
-		}
 
 		stage('Scale down ASG') {
 			steps {
